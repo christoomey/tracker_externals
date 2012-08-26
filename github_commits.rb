@@ -4,14 +4,17 @@ require 'date'
 require 'rest_client'
 require 'highline/import'
 
-def get_password
+def get_credentials account
   begin
-    raw_password = File.open('github.txt', 'r') {|f| f.read}
-    password = raw_password.chomp
+    accounts = File.open(".secrets", "r") {|f| JSON.parse(f.read)}
+    gh = accounts[account]
+    user = gh['user']
+    password = gh['password']
   rescue
-    password = ask('Enter Github password: ') {|q| q.echo=false}
+    user = ask("Please enter Github user: ") {|q| q.echo=false}
+    password = ask('password: ') {|q| q.echo=false}
   end
-  return password
+  return [user, password]
 end
 
 def repo_names user, password
@@ -65,8 +68,7 @@ def all_commits repos, user, password
 end
 
 def main
-  user = "christoomey"
-  password = get_password
+  user, password = get_credentials "github"
   repos = repo_names(user, password).reject! {|repo| repo == "all_your_base"}
   collected = all_commits repos, user, password
   weekly_total collected
