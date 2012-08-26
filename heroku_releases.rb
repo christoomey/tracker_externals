@@ -4,14 +4,17 @@ require 'pry'
 require 'highline/import'
 require 'rest_client'
 
-def get_token
+def get_credentials account
   begin
-    raw_token = File.open('heroku.txt', 'r') {|f| f.read}
-    token = raw_token.chomp
+    accounts = File.open(".secrets", "r") {|f| JSON.parse(f.read)}
+    heroku = accounts[account]
+    user = heroku['user']
+    password = heroku['password']
   rescue
-    token = ask('Enter Heroku API token: ') {|q| q.echo=false}
+    user = ""
+    password = ask("Please enter Heroku API token: ") {|q| q.echo=false}
   end
-  return token
+  return [user, password]
 end
 
 def request_releases app, token
@@ -50,7 +53,7 @@ def collect_releases apps, token
 end
 
 def main
-  token = get_token
+  user, token = get_credentials "heroku"
   apps = app_names token
   releases = collect_releases apps, token
   weekly_total releases
