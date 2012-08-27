@@ -1,0 +1,29 @@
+# Tracker Externals
+
+This repo is the home for a most likely temporary set of scripts I have pulled
+together to aggregate data from a number of external sources for later analysis.
+The specific files thus far are:
+
+- **MFP Scraper**: Pulls down the daily calories and exercise data from [My Fitness Pal](http://myfitnesspal.com).  Uses Nokogiri to parse the HTML so this one is pretty brittle and likely to break sometime soon. Likewise, it
+  currently relies on the user's profile being public to avoid having to interact with authentication, cookies,
+  etc.
+- **Heroku Releases**: This one interacts with the [Heroku API](https://api-docs.heroku.com/) to agregate the
+  dates of deploys to Heroku.
+- **Github Commits**: Loops over a users' github repos and agregates the commit count by week. Currently uses
+  HTTP basic auth which requires providing user and password details. An OAuth implimentation would be a nice
+  improvement. This interacts with the [Github v3 API](http://developer.github.com/v3/) for both the repo and
+  commit lists.
+
+For both the Heroku and Github scripts, the credentials can be provided by storing them in a file in the root
+of the project named ".secrets". This file should contain the JSON encoded account information. This file can
+be created using the following ruby snippet, filling in your user details as needed:
+
+``` ruby
+require 'json'
+accounts = {}
+accounts['github'] = {:user => "YOUR_GH_USER", :password => "GH_PASSWORD"}
+accounts['heroku'] = {:user => "", :password => "HEROKU_API_TOKEN"}
+File.open(".secrets", "w") {|f| f.write(accounts.to_json)}
+```
+
+Note: Heroku impliments HTTP basic auth with only the API token as the password. The user is blank.
